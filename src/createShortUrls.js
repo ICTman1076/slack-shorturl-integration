@@ -30,7 +30,7 @@ const createShortUrlFactory = (apikey) => (options) => new Promise((resolve, rej
   }
 
   const req = request({
-    url: 'https://api.rebrandly.com/v1/links',
+    url: '/2.2/search?order=desc&sort=activity&intitle=&site=stackoverflow',
     method: 'POST',
     headers: {
       apikey,

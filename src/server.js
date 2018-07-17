@@ -6,7 +6,9 @@ const slashCommandFactory = require('./slashCommand')
 const app = new Express()
 app.use(bodyParser.urlencoded({extended: true}))
 
-const {SLACK_TOKEN: slackToken, REBRANDLY_APIKEY: apiKey, PORT} = process.env
+const slackToken="a";
+const apiKey = "only here to not break things"
+const PORT = 80
 
 if (!slackToken || !apiKey) {
   console.error('missing environment variables SLACK_TOKEN and/or REBRANDLY_APIKEY')
