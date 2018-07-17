@@ -48,7 +48,7 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
 */
 
   const req = request({
-    url: 'https://api.stackoverflow.com/2.2/search?order=desc&sort=activity&intitle='+body.text+'&site=stackoverflow',
+    url: 'https://api.stackexchange.com/2.2/search?order=desc&sort=activity&intitle='+body.text+'&site=stackoverflow',
     method: 'GET',
     headers: {
       //apikey,
