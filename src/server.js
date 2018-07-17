@@ -23,7 +23,7 @@ const slashCommand = slashCommandFactory(rebrandlyClient, slackToken)
 app.post('/', (req, res) => {
   slashCommand(req.body)
     .then((result) => {
-      return res.json(result)
+      return result
     })
     .catch(console.error)
 })

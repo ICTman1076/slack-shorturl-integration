@@ -50,17 +50,18 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
   const req = request({
     url: 'https://api.stackexchange.com/2.2/search?order=desc&sort=activity&intitle='+body.text+'&site=stackoverflow',
     method: 'GET',
-    headers: {
+/*    headers: {
       //apikey,
       'Content-Type': 'application/json'
-    },
+    },*/
 //    body: JSON.stringify(body, null, 2),
     resolveWithFullResponse: true
   })
 
   req
     .then((response) => {
-      const result = JSON.parse(response.body)
+      //console.log(response.body);
+      const result = response.body
       resolve(result)
     })
     .catch((err) => {
