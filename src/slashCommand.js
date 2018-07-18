@@ -1,6 +1,7 @@
 const commandParser = require('./commandParser')
 const validateCommandInput = require('./validateCommandInput')
 const request = require('request-promise-native')
+var zlib = require("zlib");
 const createErrorAttachment = (error) => ({
   color: 'danger',
   text: `*Error*:\n${error.message}`,
@@ -47,26 +48,31 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
   }
 */
 
+  function getGZipped(req, callback) {
+    var gunzip = zlib.createGunzip();
+    req.pipe(gunzip);
+
+    var buffer  = [];
+    gunzip.on('data', function (data) {
+        // decompression chunk ready, add it to the buffer
+        buffer.push(data);
+    }).on('end', function () {
+        //response and decompression complete, join the buffer and return
+        callback(null, JSON.parse(buffer.join('')));
+    }).on('error', function (e) {
+        callback(e);
+    });
+  }
+
   const req = request({
     url: 'https://api.stackexchange.com/2.2/search?order=desc&sort=activity&intitle='+body.text+'&site=stackoverflow',
     method: 'GET',
-/*    headers: {
-      //apikey,
-      'Content-Type': 'application/json'
-    },*/
-//    body: JSON.stringify(body, null, 2),
     resolveWithFullResponse: true
   })
 
-  req
-    .then((response) => {
-      //console.log(response.body);
-      const result = response.body
-      resolve(result)
-    })
-    .catch((err) => {
-      resolve(err)
-    })
+getGZipped(req,function(e,data){
+  resolve(data)
+})
   })
 
 module.exports = slashCommandFactory
