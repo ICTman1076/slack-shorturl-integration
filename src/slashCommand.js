@@ -1,16 +1,16 @@
 const commandParser = require('./commandParser')
 const validateCommandInput = require('./validateCommandInput')
 const request = require('request-promise-native')
-var zlib = require("zlib");
+const zlib = require("zlib");
 const createErrorAttachment = (error) => ({
   color: 'danger',
   text: `*Error*:\n${error.message}`,
   mrkdwn_in: ['text']
 })
 
-const createSuccessAttachment = (link) => ({
+const createSuccessAttachment = (result) => ({
   color: 'good',
-  text: `*<http://${link.shortUrl}|${link.shortUrl}>* (<https://www.rebrandly.com/links/${link.id}|edit>):\n${link.destination}`,
+  text: `*${result.link}|${result.title}>*`,
   mrkdwn_in: ['text']
 })
 
@@ -54,10 +54,8 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
 
     var buffer  = [];
     gunzip.on('data', function (data) {
-        // decompression chunk ready, add it to the buffer
         buffer.push(data);
     }).on('end', function () {
-        //response and decompression complete, join the buffer and return
         callback(null, JSON.parse(buffer.join('')));
     }).on('error', function (e) {
         callback(e);
@@ -65,14 +63,52 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
   }
 
   const req = request({
-    url: 'https://api.stackexchange.com/2.2/search?order=desc&sort=activity&intitle='+body.text+'&site=stackoverflow',
+    url: 'https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&q='+body.text+'&site=stackoverflow',
     method: 'GET',
     resolveWithFullResponse: true
   })
 
-getGZipped(req,function(e,data){
-  resolve(data)
-})
+  getGZipped(req,function(e,data){
+    var questionsFound = [];
+    var answered = false;
+    var firstunfound = true;
+    var title = '';
+    var link = '';
+    var itemToCarry;
+
+    for (var i = 0, len = data.items.length; i < len; i++) {
+      item=data.items[i]
+      answered = item.is_answered;
+      title = item.title;
+      link = item.link;
+      owner = item.owner
+      questionsFound.push([title, link, answered, [owner.display_name, owner.link, owner.profile_image]])
+    }
+    var attach=[];
+    var col="";
+    for (var i = 0; i < 5; i++) {
+      var q = questionsFound[i]
+      if(q[2]){
+        col="#4CAF50";
+      }else{
+        col="#CDDC39"
+      }
+      attach.push({
+              "fallback": q[0]+" - "+q[1],
+              "color": col,
+              "pretext": "Result #"+(i+1).toString(),
+              "author_name": q[3][0],
+              "author_link": q[3][1],
+              "author_icon": q[3][2],
+              "title": q[0],
+              "title_link": q[1]
+          })
+    }
+    resolve({
+      text: 'You searched Stack Overflow for *`'+body.text+'`* - these are the results that came back:',
+      attachments: attach
+    })
   })
+})
 
 module.exports = slashCommandFactory
