@@ -84,30 +84,43 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
       owner = item.owner
       questionsFound.push([title, link, answered, [owner.display_name, owner.link, owner.profile_image]])
     }
-    var attach=[];
-    var col="";
-    for (var i = 0; i < 5; i++) {
-      var q = questionsFound[i]
-      if(q[2]){
-        col="#4CAF50";
-      }else{
-        col="#CDDC39"
+    if(questionsFound.length<1){
+      var attach=[{
+            "fallback": "No answers found. Perhaps try a web search?",
+            "color": "#F44336",
+            "title": "No answers found.",
+            "text": "Perhaps try a <https://ddg.gg/"+body.text+"|web search>?"
+        }];
+      resolve({
+        attachments: attach
+      })
+    }else{
+      var attach=[];
+      var col="";
+      for (var i = 0; i < 5; i++) {
+        var q = questionsFound[i]
+        if(q[2]){
+          col="#4CAF50";
+        }else{
+          col="#CDDC39"
+        }
+        attach.push({
+                "fallback": q[0]+" - "+q[1],
+                "color": col,
+                "pretext": "Result #"+(i+1).toString(),
+                "author_name": q[3][0],
+                "author_link": q[3][1],
+                "author_icon": q[3][2],
+                "title": q[0],
+                "title_link": q[1]
+            })
       }
-      attach.push({
-              "fallback": q[0]+" - "+q[1],
-              "color": col,
-              "pretext": "Result #"+(i+1).toString(),
-              "author_name": q[3][0],
-              "author_link": q[3][1],
-              "author_icon": q[3][2],
-              "title": q[0],
-              "title_link": q[1]
-          })
+      resolve({
+        text: 'You searched Stack Overflow for *`'+body.text+'`* - these are the results that came back:',
+        attachments: attach
+      })
+
     }
-    resolve({
-      text: 'You searched Stack Overflow for *`'+body.text+'`* - these are the results that came back:',
-      attachments: attach
-    })
   })
 })
 
