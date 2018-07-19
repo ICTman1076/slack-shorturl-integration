@@ -2,6 +2,12 @@ const commandParser = require('./commandParser')
 const validateCommandInput = require('./validateCommandInput')
 const request = require('request-promise-native')
 const zlib = require("zlib");
+const querystring = require('querystring');
+
+const ANSWERED_COLOUR = '#4CAF50';
+const UNANSWERED_COLOUR = '#CDDC39';
+
+
 const createErrorAttachment = (error) => ({
   color: 'danger',
   text: `*Error*:\n${error.message}`,
@@ -77,51 +83,80 @@ const slashCommandFactory = (createShortUrls, slackToken) => (body) => new Promi
     var itemToCarry;
 
     for (var i = 0, len = data.items.length; i < len; i++) {
-      item=data.items[i]
-      answered = item.is_answered;
-      title = item.title;
-      link = item.link;
-      owner = item.owner
-      questionsFound.push([title, link, answered, [owner.display_name, owner.link, owner.profile_image]])
+        item = data.items[i];
+        answered = item.is_answered;
+        title = item.title;
+        link = item.link;
+        owner = item.owner;
+        questionsFound.push({
+            'title': title,
+            'link': link,
+            'answered': answered,
+            'author_name': owner.display_name,
+            'author_link': owner.link,
+            'author_icon': owner.profile_image
+        });
     }
     if(questionsFound.length<1){
-      var attach=[{
-            "fallback": "No answers found. Perhaps try a web search?",
-            "color": "#F44336",
-            "title": "No answers found.",
-            "text": "Perhaps try a <https://ddg.gg/"+body.text+"|web search>?"
-        }];
+      var attach = [{
+          'fallback': 'No more answers found. Perhaps try a web search?',
+          'color': '#F44336',
+          'title': 'No more answers found.',
+          'text': 'Perhaps try a <https://ddg.gg/' + querystring.escape(body.text) + '|web search>?',
+      }];
       resolve({
         attachments: attach
       })
     }else{
       var attach=[];
-      var col="";
+      var col='';
       for (var i = 0; i < 5; i++) {
         var q = questionsFound[i]
-        if(q[2]){
-          col="#4CAF50";
-        }else{
-          col="#CDDC39"
+
+        if (q.answered) {
+            col = ANSWERED_COLOUR;
+        } else {
+            col = UNANSWERED_COLOUR;
         }
+
+        if(i==4){
         attach.push({
-                "fallback": q[0]+" - "+q[1],
-                "color": col,
-                "pretext": "Result #"+(i+1).toString(),
-                "author_name": q[3][0],
-                "author_link": q[3][1],
-                "author_icon": q[3][2],
-                "title": q[0],
-                "title_link": q[1]
+                'fallback': q.title + ' - ' + q.link,
+                'color': col,
+                'pretext': 'Result #' + (i + 1).toString(),
+                'author_name': q.author_name,
+                'author_link': q.author_link,
+                'author_icon': q.author_icon,
+                'title': q.title,
+                'title_link': q.link,
+                'callback_id': 'so_pagination',
+                'actions': [
+                 {
+                     'name': 'showmore',
+                     'text': 'More',
+                     'type': 'button',
+                     'value': body.text+'|1'
+                 }
+             ]
             })
+          }else{
+            attach.push({
+              'fallback': q.title + ' - ' + q.link,
+              'color': col,
+              'pretext': 'Result #' + (i + 1).toString(),
+              'author_name': q.author_name,
+              'author_link': q.author_link,
+              'author_icon': q.author_icon,
+              'title': q.title,
+              'title_link': q.link
+                })
+          }
       }
       resolve({
         text: 'You searched Stack Overflow for *`'+body.text+'`* - these are the results that came back:',
         attachments: attach
       })
-
     }
-  })
+});
 })
-
 module.exports = slashCommandFactory

@@ -3,6 +3,8 @@ const bodyParser = require('body-parser')
 const createShortUrlsFactory = require('./createShortUrls')
 const slashCommandFactory = require('./slashCommand')
 
+const interaction = require('./interaction')
+
 const app = new Express()
 app.use(bodyParser.urlencoded({extended: true}))
 
@@ -20,13 +22,17 @@ const port = PORT || 80
 const rebrandlyClient = createShortUrlsFactory(apiKey)
 const slashCommand = slashCommandFactory(rebrandlyClient, slackToken)
 
-app.post('/', (req, res) => {
+app.post('/cmd/so', (req, res) => {
   slashCommand(req.body)
     .then((result) => {
       return res.json(result)
     })
     .catch(console.error)
 })
+
+app.post('/interaction', (req, res) =>
+  interaction(req,res)
+)
 
 app.listen(port, () => {
   console.log(`Server started at localhost:${port}`)
