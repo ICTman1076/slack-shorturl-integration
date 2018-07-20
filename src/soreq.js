@@ -58,7 +58,7 @@ module.exports = (res,search,page) => {
           'title': 'No more answers found.',
           'text': 'Perhaps try a <https://ddg.gg/' + querystring.escape(search) + '|web search>?',
       }];
-      return ({
+      res.json ({
         attachments: attach
       })
     }else{
