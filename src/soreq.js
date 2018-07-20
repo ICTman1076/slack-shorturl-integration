@@ -21,7 +21,7 @@ module.exports = (res,search,page) => {
     });
   }
   const url = 'https://api.stackexchange.com/2.2/search/advanced?order=desc&sort=activity&q='+search+'&site=stackoverflow&page='+page.toString();
-  console.log(url);
+
   const req = request({
     url: url,
     method: 'GET',

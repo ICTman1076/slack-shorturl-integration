@@ -8,11 +8,10 @@ const UNANSWERED_COLOUR = '#CDDC39';
 
 module.exports = (initialReq, res) => {
    const payload = JSON.parse(initialReq.body.payload);
-   console.log(payload)
 
    const payloadvalue = payload.actions[0].value.split('|');
    const page = parseInt(payloadvalue[1],10)+1;
    const search = payloadvalue[0]
-   
+
    soreq(res,search,page)
 }
