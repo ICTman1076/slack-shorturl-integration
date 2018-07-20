@@ -52,12 +52,24 @@ module.exports = (res,search,page) => {
         });
     }
     if(questionsFound.length<1){
+      let word="";
+      if(page>1){
+        word="more ";
+      }
       var attach = [{
-          'fallback': 'No more answers found. Perhaps try a web search?',
+          'fallback': 'No '+word+'answers found. Perhaps try a web search?',
           'color': '#F44336',
-          'title': 'No more answers found.',
+          'title': 'No '+word+'answers found.',
           'text': 'Perhaps try a <https://ddg.gg/' + querystring.escape(search) + '|web search>?',
       }];
+      if data.quota_remaining<50{
+        attach.push({
+            'fallback': 'WARNING: Only '+data.quota_remaining+' StackOverflow api requests left for the bot\'s IP. Tread carefully!',
+            'color': '#F44336',
+            'title': 'WARNING: Only '+data.quota_remaining+' StackOverflow api requests left for this IP. Tread carefully!',
+            'text': 'Perhaps try a <https://ddg.gg/' + querystring.escape(search) + '|web search>?',
+        })
+      }
       res.json ({
         attachments: attach
       })
@@ -104,6 +116,14 @@ module.exports = (res,search,page) => {
               'title': q.title,
               'title_link': q.link
                 })
+          }
+          if data.quota_remaining<50{
+            attach.push({
+                'fallback': 'WARNING: Only '+data.quota_remaining+' StackOverflow api requests left for the bot\'s IP. Tread carefully!',
+                'color': '#F44336',
+                'title': 'WARNING: Only '+data.quota_remaining+' StackOverflow api requests left for this IP. Tread carefully!',
+                'text': 'Perhaps try a <https://ddg.gg/' + querystring.escape(search) + '|web search>?',
+            })
           }
       }
       res.json( {
