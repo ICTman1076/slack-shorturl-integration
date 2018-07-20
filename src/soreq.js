@@ -62,7 +62,7 @@ module.exports = (res,search,page) => {
           'title': 'No '+word+'answers found.',
           'text': 'Perhaps try a <https://ddg.gg/' + querystring.escape(search) + '|web search>?',
       }];
-      if data.quota_remaining<50{
+      if(data.quota_remaining<50){
         attach.push({
             'fallback': 'WARNING: Only '+data.quota_remaining+' StackOverflow api requests left for the bot\'s IP. Tread carefully!',
             'color': '#F44336',
@@ -117,7 +117,7 @@ module.exports = (res,search,page) => {
               'title_link': q.link
                 })
           }
-          if data.quota_remaining<50{
+          if(data.quota_remaining<50){
             attach.push({
                 'fallback': 'WARNING: Only '+data.quota_remaining+' StackOverflow api requests left for the bot\'s IP. Tread carefully!',
                 'color': '#F44336',
