@@ -1,7 +1,7 @@
 const Express = require('express')
 const bodyParser = require('body-parser')
 const createShortUrlsFactory = require('./createShortUrls')
-const slashCommandFactory = require('./slashCommand')
+const slashCommand = require('./slashCommand')
 
 const interaction = require('./interaction')
 
@@ -20,15 +20,10 @@ if (!slackToken || !apiKey) {
 const port = PORT || 80
 
 const rebrandlyClient = createShortUrlsFactory(apiKey)
-const slashCommand = slashCommandFactory(rebrandlyClient, slackToken)
 
-app.post('/cmd/so', (req, res) => {
-  slashCommand(req.body)
-    .then((result) => {
-      return res.json(result)
-    })
-    .catch(console.error)
-})
+app.post('/cmd/so', (req, res) =>
+  slashCommand(res, req.body)
+)
 
 app.post('/interaction', (req, res) =>
   interaction(req,res)
