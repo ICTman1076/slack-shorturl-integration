@@ -1,8 +1,6 @@
 const Express = require('express')
 const bodyParser = require('body-parser')
-const slashCommand = require('./slashCommand')
-
-const interaction = require('./interaction')
+const stackoverflow = require('./stackoverflow')
 
 const app = new Express()
 app.use(bodyParser.urlencoded({extended: true}))
@@ -13,11 +11,11 @@ const PORT = 80
 const port = PORT || 80
 
 app.post('/cmd/so', (req, res) =>
-  slashCommand(res, req.body)
+  stackoverflow.cmd(res, req.body)
 )
 
 app.post('/interaction', (req, res) =>
-  interaction(req,res)
+  stackoverflow.button(req,res)
 )
 
 app.listen(port, () => {
